@@ -1,120 +1,146 @@
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require('google-auth-library');
+const User = require("../models/User")
+const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+const { OAuth2Client } = require("google-auth-library")
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET, // ← THÊM CLIENT SECRET
+)
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
-};
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" })
+}
 
 // --- ĐĂNG KÝ ---
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    
+    const { name, email, password } = req.body
+
     // Validate cơ bản
     if (!name || !email || !password) {
-        return res.status(400).json({ message: "Vui lòng điền đủ thông tin!" });
+      return res.status(400).json({ message: "Vui lòng điền đủ thông tin!" })
     }
 
     // Kiểm tra trùng email
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email })
     if (existingUser) {
-        return res.status(400).json({ message: "Email này đã được sử dụng!" });
+      return res.status(400).json({ message: "Email này đã được sử dụng!" })
     }
 
     // Mã hóa mật khẩu
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
 
-    // Tạo user mới
-    // THÊM: Tạo avatar mặc định từ tên (dùng dịch vụ ui-avatars)
-    const defaultImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    // Tạo user mới với avatar mặc định
+    const defaultImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
 
-    const newUser = new User({ 
-        name, 
-        email, 
-        password: hashedPassword,
-        image: defaultImage // Lưu avatar mặc định
-    });
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      image: defaultImage,
+    })
 
-    await newUser.save();
-    res.status(201).json({ message: "Đăng ký thành công! Hãy đăng nhập." });
-
+    await newUser.save()
+    res.status(201).json({ message: "Đăng ký thành công! Hãy đăng nhập." })
   } catch (error) {
-    // IN LỖI RA TERMINAL ĐỂ DEBUG
-    console.error("❌ Lỗi Đăng Ký:", error); 
-    res.status(500).json({ message: "Lỗi Server (Xem terminal)", error: error.message });
+    console.error("❌ Lỗi Đăng Ký:", error)
+    res.status(500).json({ message: "Lỗi Server (Xem terminal)", error: error.message })
   }
-};
+}
 
 // --- ĐĂNG NHẬP ---
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    
+    const { email, password } = req.body
+
     // 1. Tìm user theo email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email })
     if (!user) {
-        return res.status(400).json({ message: "Email chưa được đăng ký!" });
+      return res.status(400).json({ message: "Email chưa được đăng ký!" })
     }
 
-    // 2. Logic kiểm tra nguồn gốc tài khoản
-    // Nếu user tồn tại nhưng không có password -> Nghĩa là họ từng đăng nhập bằng Google
+    // 2. Kiểm tra nếu tài khoản liên kết Google
     if (!user.password) {
-        return res.status(400).json({ message: "Email này đã liên kết Google. Vui lòng đăng nhập bằng Google!" });
+      return res.status(400).json({ message: "Email này đã liên kết Google. Vui lòng đăng nhập bằng Google!" })
     }
 
     // 3. Kiểm tra mật khẩu
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-        return res.status(400).json({ message: "Mật khẩu không đúng!" });
+      return res.status(400).json({ message: "Mật khẩu không đúng!" })
     }
 
     // 4. Thành công
-    const token = generateToken(user._id);
-    res.json({ 
-        message: "Đăng nhập thành công!", 
-        token, 
-        user: { id: user._id, name: user.name, email: user.email, image: user.image } 
-    });
-
+    const token = generateToken(user._id)
+    res.json({
+      message: "Đăng nhập thành công!",
+      token,
+      user: { id: user._id, name: user.name, email: user.email, image: user.image },
+    })
   } catch (error) {
-    console.error("❌ Lỗi Đăng Nhập:", error);
-    res.status(500).json({ message: "Lỗi Server", error: error.message });
+    console.error("❌ Lỗi Đăng Nhập:", error)
+    res.status(500).json({ message: "Lỗi Server", error: error.message })
   }
-};
+}
 
-// ... (Giữ nguyên phần Google Login và Logout cũ)
+// --- GOOGLE LOGIN ---
 exports.googleLogin = async (req, res) => {
-    // ... Code cũ của bạn ...
-    // Nhớ copy lại đoạn Google Login cũ vào đây nhé
-     try {
+  try {
     const { token } = req.body;
-    const ticket = await client.verifyIdToken({ idToken: token, audience: process.env.GOOGLE_CLIENT_ID });
-    const { name, email, picture } = ticket.getPayload();
-
+    
+    const ticket = await client.verifyIdToken({ 
+      idToken: token, 
+      audience: process.env.GOOGLE_CLIENT_ID 
+    });
+    
+    const payload = ticket.getPayload();
+    console.log('[v0] Full Google payload:', payload); // ← Xem tất cả data
+    
+    const { name, email, picture } = payload;
+    console.log('[v0] Picture URL:', picture); // ← Kiểm tra URL ảnh
+    
     let user = await User.findOne({ email });
     if (user) {
-      // Nếu user đã tồn tại (dù tạo bằng tay hay Google), ta cập nhật ảnh
       user.image = picture;
       await user.save();
+      console.log('[v0] Updated user image:', user.image); // ← Xem đã lưu chưa
     } else {
-      // Tạo user mới từ Google (không có password)
-      user = new User({ name, email, password: null, image: picture });
+      const username = email.split('@')[0];
+      user = new User({ 
+        name, 
+        email, 
+        username,
+        password: null, 
+        image: picture 
+      });
       await user.save();
+      console.log('[v0] New user created with image:', user.image);
     }
 
     const jwtToken = generateToken(user._id);
-    res.json({ message: "Google Login thành công!", token: jwtToken, user: { id: user._id, name: user.name, email: user.email, image: user.image } });
+    res.json({ 
+      message: "Google Login thành công!", 
+      token: jwtToken, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        image: user.image  // ← Đảm bảo trả về image
+      } 
+    });
+    
   } catch (error) {
-    console.error("Google Login Error:", error);
-    res.status(400).json({ message: "Token Google lỗi!", details: error.message });
+    console.error('[v0] Google login error:', error);
+    res.status(400).json({ 
+      message: "Đăng nhập Google thất bại!", 
+      details: error.message 
+    });
   }
 };
 
+// --- ĐĂNG XUẤT ---
 exports.logout = (req, res) => {
-  res.json({ message: "Đăng xuất thành công" });
-};
+  res.json({ message: "Đăng xuất thành công" })
+}

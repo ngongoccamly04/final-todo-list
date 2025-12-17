@@ -4,7 +4,7 @@ const userStr = localStorage.getItem('user');
 if (!token || !userStr) window.location.href = 'index.html';
 const user = JSON.parse(userStr);
 document.getElementById('userName').innerText = user.name;
-document.getElementById('userAvatar').src = user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
+document.getElementById('userAvatar').src = user.image ;
 const hour = new Date().getHours();
 document.getElementById('greetingTime').innerText = hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,";
 
