@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - Todo App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 h-screen w-full flex items-center justify-center font-sans">
+
+    <div class="bg-white rounded-2xl shadow-2xl flex w-full max-w-4xl overflow-hidden m-4 h-[650px]">
+        
+        <div class="hidden md:flex w-1/2 bg-purple-600 items-center justify-center relative">
+            <div class="absolute inset-0 bg-gradient-to-tr from-purple-600 to-pink-500 opacity-90"></div>
+            <div class="relative z-10 text-white p-10 text-center">
+                <i class="fas fa-rocket text-6xl mb-6 opacity-80"></i>
+                <h2 class="text-3xl font-bold mb-4">Tham gia ngay!</h2>
+                <p class="text-purple-100">Tạo tài khoản miễn phí và bắt đầu quản lý công việc.</p>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+            
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-6">Đăng Ký</h2>
+
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2 ml-1">Họ tên</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-3.5 text-gray-400"></i>
+                        <input type="text" id="regName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full pl-10 p-3" placeholder="Nguyễn Văn A" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2 ml-1">Email</label>
+                    <div class="relative">
+                        <i class="fas fa-envelope absolute left-3 top-3.5 text-gray-400"></i>
+                        <input type="email" id="regEmail" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full pl-10 p-3" placeholder="name@example.com" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2 ml-1">Mật khẩu</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-3.5 text-gray-400"></i>
+                        <input type="password" id="regPassword" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full pl-10 p-3" placeholder="••••••••" required>
+                    </div>
+                </div>
+                
+                <p id="regMessage" class="text-red-500 text-sm text-center font-medium min-h-[20px]"></p>
+
+                <button type="submit" class="w-full text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-3 text-center transition-all duration-200 shadow-md hover:shadow-lg">
+                    Tạo tài khoản
+                </button>
+            </form>
+
+            <p class="text-sm font-light text-gray-500 text-center mt-6">
+                Đã có tài khoản? <a href="index.html" class="font-medium text-purple-600 hover:underline">Đăng nhập</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>
