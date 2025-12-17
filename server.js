@@ -25,8 +25,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tasks', require('./routes/tasks'));
 
 // === QUAN TRỌNG: Route mặc định ===
-// Nếu người dùng vào đường dẫn lạ, trả về file index.html
-app.get('*', (req, res) => {
+app.get(/(.*)/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
